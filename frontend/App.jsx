@@ -1,26 +1,26 @@
-import { useEffect, useState } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 import CreateAccountPage from "./pages/CreateAccountPage";
 import LandingPage from "./pages/LandingPage";
-import { CREATE_ACCOUNT_ROUTE, getRoute, HOME_ROUTE } from "./routes";
+import LoginPage from "./pages/LoginPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import VerifyAccountPage from "./pages/VerifyAccountPage";
+import {
+  CREATE_ACCOUNT_ROUTE,
+  HOME_ROUTE,
+  LOGIN_ROUTE,
+  RESET_PASSWORD_ROUTE,
+  VERIFY_ACCOUNT_ROUTE,
+} from "./routes";
 
 export default function App() {
-  const [route, setRoute] = useState(getRoute);
-
-  useEffect(() => {
-    const handleHashChange = () => setRoute(getRoute());
-
-    window.addEventListener("hashchange", handleHashChange);
-
-    if (!window.location.hash) {
-      window.location.hash = HOME_ROUTE;
-    }
-
-    return () => window.removeEventListener("hashchange", handleHashChange);
-  }, []);
-
-  if (route === CREATE_ACCOUNT_ROUTE) {
-    return <CreateAccountPage />;
-  }
-
-  return <LandingPage />;
+  return (
+    <Routes>
+      <Route element={<LandingPage />} path={HOME_ROUTE} />
+      <Route element={<LoginPage />} path={LOGIN_ROUTE} />
+      <Route element={<CreateAccountPage />} path={CREATE_ACCOUNT_ROUTE} />
+      <Route element={<VerifyAccountPage />} path={VERIFY_ACCOUNT_ROUTE} />
+      <Route element={<ResetPasswordPage />} path={RESET_PASSWORD_ROUTE} />
+      <Route element={<Navigate replace to={HOME_ROUTE} />} path="*" />
+    </Routes>
+  );
 }

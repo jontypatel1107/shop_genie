@@ -1,10 +1,13 @@
 import { ArrowRight, MessageCircleMore, Store } from "lucide-react";
-import { CREATE_ACCOUNT_ROUTE, HOME_ROUTE } from "../routes";
+import { Link, useNavigate } from "react-router-dom";
+import { LOGIN_ROUTE, VERIFY_ACCOUNT_ROUTE } from "../routes";
 
 export default function CreateAccountPage() {
+  const navigate = useNavigate();
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    window.location.hash = HOME_ROUTE;
+    navigate(VERIFY_ACCOUNT_ROUTE);
   };
 
   return (
@@ -119,17 +122,17 @@ export default function CreateAccountPage() {
                 <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-[#6e757e] sm:mt-8 lg:mt-10">
                   <p>
                     Already have an account?{" "}
-                    <a className="font-bold text-[#1a6f69]" href={HOME_ROUTE}>
+                    <Link className="font-bold text-[#1a6f69]" to={LOGIN_ROUTE}>
                       Log In
-                    </a>
+                    </Link>
                   </p>
-                  <a className="hover:text-[#1a6f69]" href={HOME_ROUTE}>
+                  <Link className="hover:text-[#1a6f69]" to={LOGIN_ROUTE}>
                     Privacy Policy
-                  </a>
+                  </Link>
                   <span className="hidden text-[#9aa1aa] sm:inline">&middot;</span>
-                  <a className="hover:text-[#1a6f69]" href={HOME_ROUTE}>
+                  <Link className="hover:text-[#1a6f69]" to={LOGIN_ROUTE}>
                     Terms of Service
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>

@@ -6,7 +6,8 @@ import {
   ShoppingBag,
   Sparkles,
 } from "lucide-react";
-import { CREATE_ACCOUNT_ROUTE, HOME_ROUTE } from "../routes";
+import { Link, useNavigate } from "react-router-dom";
+import { CREATE_ACCOUNT_ROUTE, LOGIN_ROUTE } from "../routes";
 
 const metrics = [
   { value: "3m", label: "Setup time" },
@@ -15,14 +16,16 @@ const metrics = [
 ];
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+
   const goToCreateAccount = () => {
-    window.location.hash = CREATE_ACCOUNT_ROUTE;
+    navigate(CREATE_ACCOUNT_ROUTE);
   };
 
   return (
     <main className="min-h-[100dvh] bg-[#161616] text-slate-900">
       <section className="grid min-h-[100dvh] bg-[#f6f4ee] lg:grid-cols-[0.98fr_1fr]">
-        <div className="flex flex-col justify-between overflow-hidden px-5 py-6 sm:px-10 sm:py-8 lg:px-14 lg:py-8 lg:overflow-visible">
+        <div className="flex flex-col justify-between overflow-hidden px-5 py-6 sm:px-10 sm:py-8 lg:overflow-visible lg:px-14 lg:py-8">
           <div>
             <div className="mb-8 inline-flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#0f7c72] text-white shadow-lg shadow-[#0f7c72]/20 sm:h-11 sm:w-11">
@@ -32,7 +35,7 @@ export default function LandingPage() {
             </div>
 
             <div className="max-w-xl">
-              <h1 className="text-[2.5rem] leading-[0.95] font-extrabold tracking-[-0.06em] text-[#252933] sm:text-[3.8rem] lg:text-[4.35rem]">
+              <h1 className="text-[2.5rem] font-extrabold leading-[0.95] tracking-[-0.06em] text-[#252933] sm:text-[3.8rem] lg:text-[4.35rem]">
                 Your craft
                 <br />
                 deserves a
@@ -67,8 +70,8 @@ export default function LandingPage() {
                     Digital concierge onboarding
                   </p>
                   <p className="mt-1 text-sm leading-6 text-[#69707b]">
-                    A guided setup gets your first 3 products and storefront online in just a
-                    few simple steps.
+                    A guided setup gets your first 3 products and storefront online in just a few
+                    simple steps.
                   </p>
                 </div>
               </div>
@@ -91,9 +94,9 @@ export default function LandingPage() {
 
             <p className="mt-4 text-sm text-[#7b8088]">
               Already have an account?{" "}
-              <a className="font-bold text-[#0f7c72]" href={HOME_ROUTE}>
+              <Link className="font-bold text-[#0f7c72]" to={LOGIN_ROUTE}>
                 Log in here
-              </a>
+              </Link>
             </p>
           </div>
         </div>
