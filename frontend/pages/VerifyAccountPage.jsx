@@ -1,7 +1,7 @@
 import { ArrowLeft, HelpCircle, Mail, ShieldCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import BrandLogo from "../components/BrandLogo";
-import { LOGIN_ROUTE } from "../routes";
+import { CATEGORY_ROUTE, LOGIN_ROUTE } from "../routes";
 
 const otpSlots = Array.from({ length: 6 }, (_, index) => index);
 
@@ -10,7 +10,7 @@ export default function VerifyAccountPage() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    navigate(LOGIN_ROUTE);
+    navigate(CATEGORY_ROUTE);
   };
 
   return (

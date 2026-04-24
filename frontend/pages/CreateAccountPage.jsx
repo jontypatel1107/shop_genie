@@ -1,13 +1,13 @@
 import { ArrowRight, MessageCircleMore, Store } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { LOGIN_ROUTE, VERIFY_ACCOUNT_ROUTE } from "../routes";
+import { CATEGORY_ROUTE, LOGIN_ROUTE } from "../routes";
 
 export default function CreateAccountPage() {
   const navigate = useNavigate();
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    navigate(VERIFY_ACCOUNT_ROUTE);
+    navigate(CATEGORY_ROUTE);
   };
 
   return (
