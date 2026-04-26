@@ -26,8 +26,9 @@ import {
   WandSparkles,
   Zap,
   Loader2,
+  X,
 } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { AdminLayout, AdminTopbar, StatCard, TipBox } from "../components/AdminLayout";
@@ -434,8 +435,8 @@ export function ProductsPage() {
                     <tr className="border-b border-[#edf2f6] hover:bg-[#f8fafb]" key={product._id}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded bg-[#eef2f5] flex items-center justify-center">
-                            {product.images?.[0] ? <img src={product.images[0]} className="h-full w-full object-cover rounded" /> : <Box className="h-5 w-5 text-[#c8d1da]" />}
+                          <div className="h-10 w-10 rounded bg-[#eef2f5] flex items-center justify-center overflow-hidden">
+                            {product.images?.[0]?.url ? <img src={product.images[0].url} className="h-full w-full object-cover" /> : <Box className="h-5 w-5 text-[#c8d1da]" />}
                           </div>
                           <span className="font-bold text-[#2e333b]">{product.name}</span>
                         </div>
@@ -472,14 +473,36 @@ export function ProductsPage() {
 
 export function NewProductPage() {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [images, setImages] = useState([]);
+  const [previews, setPreviews] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
     price: "",
     category: "",
     description: ""
   });
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setImages(files);
+
+    // Create previews
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    setPreviews(newPreviews);
+  };
+
+  const removeImage = (index) => {
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    setImages(newImages);
+
+    const newPreviews = [...previews];
+    newPreviews.splice(index, 1);
+    setPreviews(newPreviews);
+  };
 
   const handleSave = async () => {
     if (!formData.name || !formData.price) {
@@ -488,21 +511,34 @@ export function NewProductPage() {
     }
 
     setLoading(true);
+    setError("");
+
     try {
+      // Use FormData for file upload
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("price", formData.price);
+      data.append("category", formData.category);
+      data.append("description", formData.description);
+      
+      images.forEach((file) => {
+        data.append("images", file);
+      });
+
       const res = await fetch("/api/products", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: data, // No Content-Type header needed, browser sets it for FormData
       });
+
+      const result = await res.json();
 
       if (res.ok) {
         navigate(PRODUCTS_ROUTE);
       } else {
-        const data = await res.json();
-        setError(data.message || "Failed to save product");
+        setError(result.message || "Failed to save product");
       }
     } catch (err) {
-      setError("Something went wrong");
+      setError("Something went wrong during upload");
     } finally {
       setLoading(false);
     }
@@ -516,7 +552,44 @@ export function NewProductPage() {
         
         {error && <div className="mt-4 rounded-md bg-red-50 p-4 text-sm font-bold text-red-500">{error}</div>}
 
-        <div className="mt-7 flex min-h-72 flex-col items-center justify-center rounded-md border-2 border-dashed border-[#bbc7d2] bg-white p-8 text-center"><Camera className="h-12 w-12 rounded-full bg-[#a6eadf] p-3 text-[#0f756b]" /><p className="mt-6 text-lg font-extrabold">Drop your product photo here</p><p className="text-sm font-semibold text-[#69737e]">High resolution images work best. Max 10MB.</p><span className="mt-5 rounded-full bg-[#22bdf2] px-5 py-2 text-xs font-extrabold text-[#06485f]">Pro tip: Use natural lighting for a premium look.</span></div>
+        <div 
+          className="mt-7 flex min-h-72 flex-col items-center justify-center rounded-md border-2 border-dashed border-[#bbc7d2] bg-white p-8 text-center cursor-pointer hover:bg-slate-50 transition"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <input 
+            type="file" 
+            multiple 
+            accept="image/*" 
+            className="hidden" 
+            ref={fileInputRef} 
+            onChange={handleFileChange}
+          />
+          
+          {previews.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
+              {previews.map((url, idx) => (
+                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-slate-200">
+                  <img src={url} className="h-full w-full object-cover" />
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); removeImage(idx); }}
+                    className="absolute top-1 right-1 bg-white/80 p-1 rounded-full text-red-500 hover:bg-white"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+              <div className="aspect-square rounded-lg border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-400">
+                <Plus className="h-6 w-6" />
+              </div>
+            </div>
+          ) : (
+            <>
+              <Camera className="h-12 w-12 rounded-full bg-[#a6eadf] p-3 text-[#0f756b]" />
+              <p className="mt-6 text-lg font-extrabold">Click to upload product photos</p>
+              <p className="text-sm font-semibold text-[#69737e]">Upload up to 5 high resolution images. Max 5MB each.</p>
+            </>
+          )}
+        </div>
         
         <div className="mt-7 grid gap-6 lg:grid-cols-[1fr_270px]">
           <section className="grid gap-6 md:grid-cols-2">

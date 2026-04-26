@@ -22,6 +22,7 @@
   "homepage": "https://github.com/jontypatel1107/shop_genie#readme",
   "dependencies": {
     "@fontsource/manrope": "^5.2.8",
+    "@react-oauth/google": "^0.13.5",
     "lucide-react": "^1.8.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
