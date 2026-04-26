@@ -1,14 +1,68 @@
+import { useState } from "react";
 import { ArrowRight, Info, MessageCircleMore } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import BrandLogo from "../components/BrandLogo";
-import { CREATE_ACCOUNT_ROUTE, RESET_PASSWORD_ROUTE, VERIFY_ACCOUNT_ROUTE } from "../routes";
+import { useAuth } from "../context/AuthContext";
+import { CREATE_ACCOUNT_ROUTE, DASHBOARD_ROUTE, RESET_PASSWORD_ROUTE, VERIFY_ACCOUNT_ROUTE } from "../routes";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const [form, setForm] = useState({ identifier: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleChange = (e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError("");
+  };
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    try {
+      const res = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: unverifiedEmail }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setResent(true);
+        setTimeout(() => navigate(VERIFY_ACCOUNT_ROUTE), 2000);
+      }
+    } catch (err) {
+      setError("Failed to resend verification code");
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    navigate(VERIFY_ACCOUNT_ROUTE);
+    if (!form.identifier || !form.password) {
+      setError("Please fill in all fields");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      await login(form.identifier, form.password);
+      navigate(DASHBOARD_ROUTE);
+    } catch (err) {
+      const message = err.message || "";
+      if (message.includes("verify")) {
+        setUnverifiedEmail(form.identifier);
+        setError("unverified");
+      } else {
+        setError(message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,14 +79,56 @@ export default function LoginPage() {
           </div>
 
           <form className="rounded-t-[1.35rem] bg-white px-5 py-7 sm:px-8" onSubmit={handleSubmit}>
+            {error === "unverified" ? (
+              <div className="mb-4 rounded-md bg-[#ffe8b8] px-4 py-4 text-sm">
+                <p className="font-extrabold text-[#8a5a00]">Email not verified</p>
+                <p className="mt-1 font-semibold text-[#a06800]">
+                  Please verify your email before logging in.
+                </p>
+                {resent ? (
+                  <p className="mt-2 font-bold text-[#0f756b]">Verification code resent! Redirecting...</p>
+                ) : (
+                  <button
+                    className="mt-3 rounded-md bg-[#0f756b] px-4 py-2 text-sm font-extrabold text-white disabled:opacity-50"
+                    disabled={resending}
+                    onClick={handleResendVerification}
+                    type="button"
+                  >
+                    {resending ? "Sending..." : "Resend Verification Code"}
+                  </button>
+                )}
+              </div>
+            ) : error ? (
+              <div className="mb-4 rounded-md bg-[#ffd9db] px-4 py-3 text-sm font-semibold text-[#d43238]">
+                {error}
+              </div>
+            ) : null}
+
             <label className="block">
               <span className="mb-2 block text-sm font-extrabold text-[#303640]">
                 Phone Number or Email
               </span>
               <input
                 className="h-14 w-full rounded-md border border-transparent bg-[#d9dee4] px-4 text-base font-semibold text-[#343a43] outline-none transition placeholder:text-[#79818a] focus:border-[#0f756b] focus:bg-white"
+                name="identifier"
+                onChange={handleChange}
                 placeholder="Enter your details"
                 type="text"
+                value={form.identifier}
+              />
+            </label>
+
+            <label className="mt-3 block">
+              <span className="mb-2 block text-sm font-extrabold text-[#303640]">
+                Password
+              </span>
+              <input
+                className="h-14 w-full rounded-md border border-transparent bg-[#d9dee4] px-4 text-base font-semibold text-[#343a43] outline-none transition placeholder:text-[#79818a] focus:border-[#0f756b] focus:bg-white"
+                name="password"
+                onChange={handleChange}
+                placeholder="Enter your password"
+                type="password"
+                value={form.password}
               />
             </label>
 
@@ -42,10 +138,11 @@ export default function LoginPage() {
             </div>
 
             <button
-              className="mt-6 inline-flex h-14 w-full items-center justify-center gap-2 rounded-md bg-[#087466] px-6 text-base font-extrabold text-white shadow-[0_16px_28px_rgba(8,116,102,0.22)] transition hover:-translate-y-0.5"
+              className="mt-6 inline-flex h-14 w-full items-center justify-center gap-2 rounded-md bg-[#087466] px-6 text-base font-extrabold text-white shadow-[0_16px_28px_rgba(8,116,102,0.22)] transition hover:-translate-y-0.5 disabled:opacity-50"
+              disabled={loading}
               type="submit"
             >
-              Get OTP
+              {loading ? "Signing In..." : "Sign In"}
               <ArrowRight className="h-5 w-5" />
             </button>
 

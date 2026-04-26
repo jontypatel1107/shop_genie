@@ -1,13 +1,43 @@
+import { useState } from "react";
 import { ArrowRight, MessageCircleMore, Store } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { CATEGORY_ROUTE, LOGIN_ROUTE } from "../routes";
+import { useAuth } from "../context/AuthContext";
+import { CATEGORY_ROUTE, LOGIN_ROUTE, VERIFY_ACCOUNT_ROUTE } from "../routes";
 
 export default function CreateAccountPage() {
   const navigate = useNavigate();
+  const { register } = useAuth();
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", businessName: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleChange = (e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError("");
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    navigate(CATEGORY_ROUTE);
+    if (!form.name || !form.email || !form.password) {
+      setError("Name, email, and password are required");
+      return;
+    }
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const result = await register(form);
+      if (result.success) {
+        navigate(VERIFY_ACCOUNT_ROUTE);
+      }
+    } catch (err) {
+      setError(err.message || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -72,6 +102,12 @@ export default function CreateAccountPage() {
                   Start your 14-day free trial today.
                 </p>
 
+                {error && (
+                  <div className="mt-4 rounded-md bg-[#ffd9db] px-4 py-3 text-sm font-semibold text-[#d43238]">
+                    {error}
+                  </div>
+                )}
+
                 <form className="mt-5 space-y-3.5 sm:mt-6 sm:space-y-4" onSubmit={handleSubmit}>
                   <label className="block">
                     <span className="mb-2.5 block text-sm font-semibold text-[#3d444d]">
@@ -79,19 +115,25 @@ export default function CreateAccountPage() {
                     </span>
                     <input
                       className="w-full rounded-2xl border border-transparent bg-[#dce1e7] px-4 py-3 text-base text-[#32363d] outline-none transition focus:border-[#19756f] focus:bg-white sm:px-5 sm:py-3.5"
-                      defaultValue="Jane Doe"
+                      name="name"
+                      onChange={handleChange}
+                      placeholder="Jane Doe"
                       type="text"
+                      value={form.name}
                     />
                   </label>
 
                   <label className="block">
                     <span className="mb-2.5 block text-sm font-semibold text-[#3d444d]">
-                      Business Name
+                      Email Address
                     </span>
                     <input
                       className="w-full rounded-2xl border border-transparent bg-[#dce1e7] px-4 py-3 text-base text-[#32363d] outline-none transition focus:border-[#19756f] focus:bg-white sm:px-5 sm:py-3.5"
-                      defaultValue="My Neighborhood Shop"
-                      type="text"
+                      name="email"
+                      onChange={handleChange}
+                      placeholder="jane@example.com"
+                      type="email"
+                      value={form.email}
                     />
                   </label>
 
@@ -101,17 +143,49 @@ export default function CreateAccountPage() {
                     </span>
                     <input
                       className="w-full rounded-2xl border border-transparent bg-[#dce1e7] px-4 py-3 text-base text-[#32363d] outline-none transition focus:border-[#19756f] focus:bg-white sm:px-5 sm:py-3.5"
-                      defaultValue="+1 (555) 000-0000"
+                      name="phone"
+                      onChange={handleChange}
+                      placeholder="+1 (555) 000-0000"
                       type="tel"
+                      value={form.phone}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-2.5 block text-sm font-semibold text-[#3d444d]">
+                      Password
+                    </span>
+                    <input
+                      className="w-full rounded-2xl border border-transparent bg-[#dce1e7] px-4 py-3 text-base text-[#32363d] outline-none transition focus:border-[#19756f] focus:bg-white sm:px-5 sm:py-3.5"
+                      name="password"
+                      onChange={handleChange}
+                      placeholder="Min 6 characters"
+                      type="password"
+                      value={form.password}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-2.5 block text-sm font-semibold text-[#3d444d]">
+                      Business Name
+                    </span>
+                    <input
+                      className="w-full rounded-2xl border border-transparent bg-[#dce1e7] px-4 py-3 text-base text-[#32363d] outline-none transition focus:border-[#19756f] focus:bg-white sm:px-5 sm:py-3.5"
+                      name="businessName"
+                      onChange={handleChange}
+                      placeholder="My Neighborhood Shop"
+                      type="text"
+                      value={form.businessName}
                     />
                   </label>
 
                   <button
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#0f7c72] px-6 py-3 text-base font-semibold text-white shadow-[0_18px_32px_rgba(15,124,114,0.28)] transition-transform duration-200 hover:-translate-y-0.5 sm:py-3.5 sm:text-lg"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#0f7c72] px-6 py-3 text-base font-semibold text-white shadow-[0_18px_32px_rgba(15,124,114,0.28)] transition-transform duration-200 hover:-translate-y-0.5 disabled:opacity-50 sm:py-3.5 sm:text-lg"
+                    disabled={loading}
                     type="submit"
                   >
-                    Create Account
-                    <ArrowRight className="h-5 w-5" />
+                    {loading ? "Creating Account..." : "Create Account"}
+                    {!loading && <ArrowRight className="h-5 w-5" />}
                   </button>
                 </form>
 

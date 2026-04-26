@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   BarChart3,
   Bell,
@@ -5,19 +6,24 @@ import {
   CircleHelp,
   Grid2X2,
   LayoutDashboard,
+  LogOut,
   Paintbrush,
   Settings,
   ShoppingBag,
   ShoppingCart,
   Store,
+  User,
   Zap,
 } from "lucide-react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
   ANALYTICS_ROUTE,
   BUILDER_ROUTE,
+  CREATE_ACCOUNT_ROUTE,
   DASHBOARD_ROUTE,
   HELP_ROUTE,
+  LOGIN_ROUTE,
   ORDERS_ROUTE,
   PRODUCTS_ROUTE,
   SETTINGS_ROUTE,
@@ -33,6 +39,19 @@ const navItems = [
 ];
 
 export function AdminTopbar({ title = "ShopGenie", search = false, action = null }) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [showDropdown, setShowDropdown] = React.useState(false);
+
+  const initials = user?.name
+    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : "SG";
+
+  const handleLogout = async () => {
+    await logout();
+    navigate(LOGIN_ROUTE);
+  };
+
   return (
     <header className="flex min-h-16 items-center justify-between gap-4 border-b border-[#dfe5eb] bg-white px-4 sm:px-6">
       <Link className="shrink-0 text-base font-extrabold tracking-[-0.04em] text-[#0f6f66]" to={DASHBOARD_ROUTE}>
@@ -48,26 +67,104 @@ export function AdminTopbar({ title = "ShopGenie", search = false, action = null
         <button className="hidden h-9 w-9 items-center justify-center rounded-full text-[#0f6f66] hover:bg-[#eef7f5] sm:flex" type="button">
           <Bell className="h-4 w-4" />
         </button>
-        <button className="h-9 w-9 rounded-full bg-[#e3f7f3] text-[#0f6f66]" type="button">
-          <CircleHelp className="mx-auto h-4 w-4" />
-        </button>
-        <div className="h-9 w-9 rounded-full bg-[url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80')] bg-cover bg-center ring-2 ring-[#93eadb]" />
+        
+        <div className="relative">
+          <button 
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e3f7f3] text-[#0f6f66] hover:bg-[#d0f0ea] transition"
+            onClick={() => setShowDropdown(!showDropdown)}
+            type="button"
+          >
+            {user?.avatar ? (
+              <div className="h-9 w-9 rounded-full bg-cover bg-center" style={{ backgroundImage: `url(${user.avatar})` }} />
+            ) : (
+              <span className="text-sm font-extrabold">{initials}</span>
+            )}
+          </button>
+          
+          {showDropdown && (
+            <>
+              <div 
+                className="fixed inset-0" 
+                onClick={() => setShowDropdown(false)}
+              />
+              <div className="absolute right-0 top-full mt-2 w-56 rounded-lg bg-white py-2 shadow-lg ring-1 ring-black/5 z-50">
+                <div className="border-b border-gray-100 px-4 pb-3">
+                  <p className="font-extrabold text-[#2e333b]">{user?.name}</p>
+                  <p className="text-sm font-semibold text-[#6f7680]">{user?.email}</p>
+                  {user?.businessName && (
+                    <p className="text-sm font-semibold text-[#0f756b]">{user.businessName}</p>
+                  )}
+                </div>
+                <Link 
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-[#2e333b] hover:bg-[#f4f7f9]"
+                  onClick={() => setShowDropdown(false)}
+                  to={SETTINGS_ROUTE}
+                >
+                  <User className="h-4 w-4" />
+                  My Account
+                </Link>
+                <Link 
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-[#2e333b] hover:bg-[#f4f7f9]"
+                  onClick={() => setShowDropdown(false)}
+                  to={SETTINGS_ROUTE}
+                >
+                  <Settings className="h-4 w-4" />
+                  Settings
+                </Link>
+                <div className="border-t border-gray-100 mt-2 pt-2">
+                  <button 
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-semibold text-[#d43238] hover:bg-[#fef2f2]"
+                    onClick={handleLogout}
+                    type="button"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Log Out
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );
 }
 
 export function AdminLayout({ children, title = "ShopGenie", search = false, action = null }) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [showDropdown, setShowDropdown] = React.useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate(LOGIN_ROUTE);
+  };
+
+  const storeName = user?.businessName || user?.name || "My Store";
+  const initials = user?.name
+    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : "MS";
+
   return (
     <main className="min-h-[100dvh] bg-[#f4f7f9] text-[#2e333b]">
       <div className="flex min-h-[100dvh] w-full">
         <aside className="hidden w-[210px] shrink-0 flex-col border-r border-[#dbe2e8] bg-[#edf2f6] px-4 py-5 lg:flex">
           <Link className="flex items-center gap-3" to={DASHBOARD_ROUTE}>
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0f756b] text-white">
-              <Store className="h-5 w-5" />
-            </span>
+            {user?.avatar ? (
+              <div 
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0f756b] text-white"
+              >
+                <Store className="h-5 w-5" />
+              </div>
+            ) : (
+              <div
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0f756b] text-white"
+              >
+                <Store className="h-5 w-5" />
+              </div>
+            )}
             <span>
-              <span className="block text-sm font-extrabold text-[#0f6f66]">My Local Shop</span>
+              <span className="block text-sm font-extrabold text-[#0f6f66]">{storeName}</span>
               <span className="text-xs font-semibold text-[#6f7984]">Premium Plan</span>
             </span>
           </Link>
