@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import https from "https";
 import { User } from "../models/index.js";
 import { AppError, asyncHandler } from "../middleware/index.js";
 import { generateToken, generateRefreshToken } from "../middleware/auth.js";
@@ -201,14 +202,32 @@ export const resendVerification = asyncHandler(async (req, res, next) => {
 });
 
 export const googleAuth = asyncHandler(async (req, res, next) => {
-  const { token } = req.body;
+  const { token, isAccessToken } = req.body;
+  let payload;
 
-  const ticket = await googleClient.verifyIdToken({
-    idToken: token,
-    audience: process.env.GOOGLE_CLIENT_ID,
-  });
+  if (isAccessToken) {
+    // Manually fetch user info using https module to avoid "fetch is not defined" error
+    payload = await new Promise((resolve, reject) => {
+      https.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`, (resp) => {
+        let data = "";
+        resp.on("data", (chunk) => { data += chunk; });
+        resp.on("end", () => {
+          try {
+            const parsed = JSON.parse(data);
+            if (resp.statusCode !== 200) reject(new Error(parsed.error_description || "Invalid token"));
+            else resolve(parsed);
+          } catch (e) { reject(e); }
+        });
+      }).on("error", (err) => reject(err));
+    });
+  } else {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    payload = ticket.getPayload();
+  }
 
-  const payload = ticket.getPayload();
   const { email, name, sub: googleId, picture } = payload;
 
   let user = await User.findOne({ googleId });
