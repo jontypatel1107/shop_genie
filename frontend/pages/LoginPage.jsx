@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { ArrowRight, Info, MessageCircleMore } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useGoogleLogin } from "@react-oauth/google";
 import BrandLogo from "../components/BrandLogo";
 import { useAuth } from "../context/AuthContext";
 import { CREATE_ACCOUNT_ROUTE, DASHBOARD_ROUTE, RESET_PASSWORD_ROUTE, VERIFY_ACCOUNT_ROUTE } from "../routes";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, updateUser } = useAuth();
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,6 +20,34 @@ export default function LoginPage() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setError("");
   };
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            token: tokenResponse.access_token,
+            isAccessToken: true 
+          }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          updateUser(data.data.user);
+          navigate(DASHBOARD_ROUTE);
+        } else {
+          setError(data.message || "Google login failed");
+        }
+      } catch (err) {
+        setError("Something went wrong with Google login");
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => setError("Google login was unsuccessful"),
+  });
 
   const handleResendVerification = async () => {
     setResending(true);
@@ -160,10 +189,13 @@ export default function LoginPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <button
-                className="h-12 rounded-md bg-[#d9dee4] text-sm font-extrabold text-[#4c535d] transition hover:bg-[#cfd5dc]"
+                className="flex items-center justify-center gap-3 h-12 rounded-md bg-[#d9dee4] text-sm font-extrabold text-[#4c535d] transition hover:bg-[#cfd5dc]"
+                onClick={() => googleLogin()}
                 type="button"
+                disabled={loading}
               >
-                GOOGLE <span className="ml-1 text-xs normal-case">Google</span>
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="h-5 w-5" alt="Google" />
+                Google
               </button>
               <button
                 className="h-12 rounded-md bg-[#d9dee4] text-sm font-extrabold text-[#4c535d] transition hover:bg-[#cfd5dc]"
