@@ -18,6 +18,7 @@ import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import VerifyAccountPage from "./pages/VerifyAccountPage";
+import StoreView from "./pages/StoreView";
 import {
   ANALYTICS_ROUTE,
   BUILDER_ROUTE,
@@ -36,6 +37,7 @@ import {
   STORE_SETUP_ROUTE,
   THEME_ROUTE,
   VERIFY_ACCOUNT_ROUTE,
+  STORE_VIEW_ROUTE,
 } from "./routes";
 
 export default function App() {
@@ -58,6 +60,7 @@ export default function App() {
       <Route element={<SettingsPage />} path={SETTINGS_ROUTE} />
       <Route element={<PublishPage />} path={PUBLISH_ROUTE} />
       <Route element={<HelpPage />} path={HELP_ROUTE} />
+      <Route element={<StoreView />} path={STORE_VIEW_ROUTE} />
       <Route element={<Navigate replace to={HOME_ROUTE} />} path="*" />
     </Routes>
   );

@@ -15,3 +15,4 @@ export const ANALYTICS_ROUTE = "/analytics";
 export const SETTINGS_ROUTE = "/settings";
 export const PUBLISH_ROUTE = "/publish";
 export const HELP_ROUTE = "/help";
+export const STORE_VIEW_ROUTE = "/store/:slug";
