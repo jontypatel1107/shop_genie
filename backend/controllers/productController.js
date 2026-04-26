@@ -8,10 +8,17 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     return next(new AppError("Create a store first", 400));
   }
 
-  const product = await Product.create({
-    store: store._id,
-    ...req.body,
-  });
+  const productData = { ...req.body, store: store._id };
+
+  // Handle uploaded files
+  if (req.files && req.files.length > 0) {
+    productData.images = req.files.map(file => ({
+      url: `/uploads/${file.filename}`,
+      alt: req.body.name || "Product Image"
+    }));
+  }
+
+  const product = await Product.create(productData);
 
   res.status(201).json({
     success: true,
@@ -85,7 +92,20 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
     return next(new AppError("Product not found", 404));
   }
 
-  Object.assign(product, req.body);
+  const productData = { ...req.body };
+
+  // Handle new uploaded files if any
+  if (req.files && req.files.length > 0) {
+    const newImages = req.files.map(file => ({
+      url: `/uploads/${file.filename}`,
+      alt: req.body.name || product.name
+    }));
+    
+    // In a real app, you might want to append or replace. Let's append:
+    productData.images = [...(product.images || []), ...newImages];
+  }
+
+  Object.assign(product, productData);
   await product.save();
 
   res.json({
