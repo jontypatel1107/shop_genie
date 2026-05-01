@@ -17,6 +17,7 @@ import {
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import ResetPasswordTokenPage from "./pages/ResetPasswordTokenPage";
 import VerifyAccountPage from "./pages/VerifyAccountPage";
 import StoreView from "./pages/StoreView";
 import {
@@ -33,6 +34,7 @@ import {
   PRODUCTS_ROUTE,
   PUBLISH_ROUTE,
   RESET_PASSWORD_ROUTE,
+  RESET_PASSWORD_TOKEN_ROUTE,
   SETTINGS_ROUTE,
   STORE_SETUP_ROUTE,
   THEME_ROUTE,
@@ -48,6 +50,7 @@ export default function App() {
       <Route element={<CreateAccountPage />} path={CREATE_ACCOUNT_ROUTE} />
       <Route element={<VerifyAccountPage />} path={VERIFY_ACCOUNT_ROUTE} />
       <Route element={<ResetPasswordPage />} path={RESET_PASSWORD_ROUTE} />
+      <Route element={<ResetPasswordTokenPage />} path={RESET_PASSWORD_TOKEN_ROUTE} />
       <Route element={<CategoryPage />} path={CATEGORY_ROUTE} />
       <Route element={<StoreSetupPage />} path={STORE_SETUP_ROUTE} />
       <Route element={<ThemeSelectionPage />} path={THEME_ROUTE} />
