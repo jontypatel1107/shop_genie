@@ -39,6 +39,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { apiFetch } from "../utils/apiFetch";
 import { AdminLayout, AdminTopbar, StatCard, TipBox } from "../components/AdminLayout";
 import {
   ANALYTICS_ROUTE,
@@ -142,9 +143,8 @@ export function StoreSetupPage() {
   useEffect(() => {
     const fetchExisting = async () => {
       try {
-        const res = await fetch("/api/stores/my");
-        const data = await res.json();
-        if (res.ok) {
+        const { data } = await apiFetch("/api/stores/my");
+        if (data?.success) {
           setExistingStore(data.data.store);
           setStoreName(data.data.store.name);
           setDescription(data.data.store.description || "");
@@ -173,21 +173,14 @@ export function StoreSetupPage() {
       const url = existingStore ? "/api/stores" : "/api/stores";
       const method = existingStore ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const { data } = await apiFetch(url, {
         method: method,
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: storeName,
           category: category,
           description: description
         }),
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to save store details");
-      }
 
       updateUser({ ...user, businessName: storeName });
       navigate(THEME_ROUTE);
@@ -286,15 +279,11 @@ export function ThemeSelectionPage() {
   const handleThemeSelect = async (theme) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/stores", {
+      await apiFetch("/api/stores", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ theme }),
       });
-
-      if (res.ok) {
-        navigate(DASHBOARD_ROUTE);
-      }
+      navigate(DASHBOARD_ROUTE);
     } catch (err) {
       console.error("Theme selection failed", err);
     } finally {
@@ -369,22 +358,23 @@ export function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const storeRes = await fetch("/api/stores/my");
-        const storeData = await storeRes.json();
-        
-        if (storeRes.ok) {
+        const { data: storeData } = await apiFetch("/api/stores/my");
+        if (storeData?.success) {
           setStore(storeData.data.store);
           
-          const productRes = await fetch("/api/products/my");
-          const productData = await productRes.json();
-          if (productRes.ok) {
-            setProducts(productData.data.products);
-          }
-        } else if (storeRes.status === 404) {
-          navigate(CATEGORY_ROUTE);
+          try {
+            const { data: productData } = await apiFetch("/api/products/my");
+            if (productData?.success) {
+              setProducts(productData.data.products);
+            }
+          } catch {}
         }
       } catch (err) {
-        console.error("Failed to fetch dashboard data", err);
+        if (err.message.includes("404")) {
+          navigate(CATEGORY_ROUTE);
+        } else {
+          console.error("Failed to fetch dashboard data", err);
+        }
       } finally {
         setLoading(false);
       }
@@ -453,9 +443,8 @@ export function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch("/api/products/my");
-        const data = await res.json();
-        if (res.ok) {
+        const { data } = await apiFetch("/api/products/my");
+        if (data?.success) {
           setProducts(data.data.products);
         }
       } catch (err) {
@@ -584,7 +573,6 @@ export function NewProductPage() {
     setError("");
 
     try {
-      // Use FormData for file upload
       const data = new FormData();
       data.append("name", formData.name);
       data.append("price", formData.price);
@@ -595,20 +583,14 @@ export function NewProductPage() {
         data.append("images", file);
       });
 
-      const res = await fetch("/api/products", {
+      await apiFetch("/api/products", {
         method: "POST",
-        body: data, // No Content-Type header needed, browser sets it for FormData
+        body: data,
       });
 
-      const result = await res.json();
-
-      if (res.ok) {
-        navigate(PRODUCTS_ROUTE);
-      } else {
-        setError(result.message || "Failed to save product");
-      }
+      navigate(PRODUCTS_ROUTE);
     } catch (err) {
-      setError("Something went wrong during upload");
+      setError(err.message || "Something went wrong during upload");
     } finally {
       setLoading(false);
     }
@@ -747,9 +729,9 @@ export function BuilderPage() {
   );
 
   useEffect(() => {
-    fetch("/api/stores/my")
-      .then(res => res.json())
-      .then(data => { if(data.success) setStore(data.data.store) });
+    apiFetch("/api/stores/my")
+      .then(({ data }) => { if(data.success) setStore(data.data.store) })
+      .catch(() => {});
   }, []);
 
   const addComponent = (type) => {
@@ -1054,9 +1036,8 @@ export function OrdersPage() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await fetch("/api/orders/my");
-        const data = await res.json();
-        if (res.ok) {
+        const { data } = await apiFetch("/api/orders");
+        if (data?.success) {
           setOrders(data.data.orders);
         }
       } catch (err) {
@@ -1073,7 +1054,7 @@ export function OrdersPage() {
   const getStatusColor = (status) => {
     switch(status) {
       case "pending": return "bg-yellow-50 text-yellow-600";
-      case "completed": return "bg-green-50 text-green-600";
+      case "delivered": return "bg-green-50 text-green-600";
       case "cancelled": return "bg-red-50 text-red-600";
       default: return "bg-gray-50 text-gray-600";
     }
@@ -1086,7 +1067,7 @@ export function OrdersPage() {
         <p className="font-semibold text-[#626c76]">Manage your customer requests and sales in one place.</p>
 
         <div className="mt-7 grid gap-5 md:grid-cols-3">
-          <StatCard label="Total Orders" value={orders.length} delta={`+${orders.filter(o => o.status === 'completed').length} completed`} />
+          <StatCard label="Total Orders" value={orders.length} delta={`+${orders.filter(o => o.status === 'delivered').length} completed`} />
           <StatCard label="Pending" value={orders.filter(o => o.status === 'pending').length} delta="awaiting processing" tone="blue" />
           <StatCard label="Revenue" value={`$${orders.reduce((sum, o) => sum + (o.total || 0), 0).toFixed(2)}`} delta="total earnings" />
         </div>
@@ -1104,7 +1085,7 @@ export function OrdersPage() {
             >
               <option value="all">All Orders</option>
               <option value="pending">Pending</option>
-              <option value="completed">Completed</option>
+              <option value="delivered">Delivered</option>
               <option value="cancelled">Cancelled</option>
             </select>
           </div>
@@ -1129,7 +1110,7 @@ export function OrdersPage() {
                   {filteredOrders.map((order) => (
                     <tr className="border-b border-[#edf2f6] hover:bg-[#f8fafb]" key={order._id}>
                       <td className="px-6 py-4 font-bold text-[#2e333b]">#{order._id?.slice(-6)}</td>
-                      <td className="px-6 py-4 text-sm font-semibold text-[#626c76]">{order.customerName || "Guest"}</td>
+                      <td className="px-6 py-4 text-sm font-semibold text-[#626c76]">{order.customer?.name || "Guest"}</td>
                       <td className="px-6 py-4 font-bold text-[#0f756b]">${order.total?.toFixed(2)}</td>
                       <td className="px-6 py-4">
                         <span className={`rounded-full px-3 py-1 text-xs font-extrabold uppercase ${getStatusColor(order.status)}`}>
@@ -1302,9 +1283,8 @@ export function SettingsPage() {
   });
 
   useEffect(() => {
-    fetch("/api/stores/my")
-      .then(res => res.json())
-      .then(data => {
+    apiFetch("/api/stores/my")
+      .then(({ data }) => {
         if(data.success) {
           setStore(data.data.store);
           setFormData({
@@ -1315,7 +1295,8 @@ export function SettingsPage() {
             description: data.data.store.description || "",
           });
         }
-      });
+      })
+      .catch(() => {});
   }, [user]);
 
   const handleSave = async () => {
@@ -1324,26 +1305,19 @@ export function SettingsPage() {
     setSuccess("");
 
     try {
-      const res = await fetch("/api/stores", {
+      const { data } = await apiFetch("/api/stores", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.storeName,
           description: formData.description,
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        setStore(data.data.store);
-        setSuccess("Settings saved successfully!");
-        updateUser({ ...user, businessName: formData.storeName });
-      } else {
-        const data = await res.json();
-        setError(data.message || "Failed to save settings");
-      }
+      setStore(data.data.store);
+      setSuccess("Settings saved successfully!");
+      updateUser({ ...user, businessName: formData.storeName });
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -1449,19 +1423,16 @@ export function PublishPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-     fetch("/api/stores/my")
-      .then(res => res.json())
-      .then(data => { if(data.success) setStore(data.data.store) });
+     apiFetch("/api/stores/my")
+      .then(({ data }) => { if(data.success) setStore(data.data.store) })
+      .catch(() => {});
   }, []);
 
   const handlePublish = async () => {
     setPublishing(true);
     try {
-      const res = await fetch("/api/stores/publish", { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        setStore(data.data.store);
-      }
+      const { data } = await apiFetch("/api/stores/publish", { method: "POST" });
+      setStore(data.data.store);
     } catch (err) {
       console.error("Publishing failed", err);
     } finally {

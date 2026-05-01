@@ -11,6 +11,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import SEO from "../utils/SEO";
+import { apiFetch } from "../utils/apiFetch";
 
 export default function StoreView() {
   const { slug } = useParams();
@@ -22,17 +23,11 @@ export default function StoreView() {
   useEffect(() => {
     const fetchStoreData = async () => {
       try {
-        const res = await fetch(`/api/stores/${slug}`);
-        const data = await res.json();
-        
-        if (res.ok) {
-          setStore(data.data.store);
-          setProducts(data.data.products);
-        } else {
-          setError(data.message || "Store not found");
-        }
+        const { data } = await apiFetch(`/api/stores/${slug}`);
+        setStore(data.data.store);
+        setProducts(data.data.products);
       } catch (err) {
-        setError("Failed to load store");
+        setError(err.message || "Store not found");
       } finally {
         setLoading(false);
       }
@@ -207,7 +202,7 @@ export default function StoreView() {
                 <div key={product._id} className={`group overflow-hidden rounded-2xl ${activeTheme.card}`}>
                   <div className="relative aspect-square overflow-hidden bg-slate-100">
                     <img 
-                      src={product.images?.[0] || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500&q=80"} 
+                      src={product.images?.[0]?.url || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500&q=80"} 
                       alt={product.name} 
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
