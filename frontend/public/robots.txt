@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /products
+Disallow: /orders
+Disallow: /analytics
+Disallow: /settings
+Disallow: /website-builder
+Disallow: /store-setup
+Disallow: /theme-selection
+Disallow: /choose-category
+
+Sitemap: https://shopgenie.com/sitemap.xml

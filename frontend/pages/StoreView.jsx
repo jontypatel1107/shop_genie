@@ -10,6 +10,7 @@ import {
   Search,
   ArrowRight
 } from "lucide-react";
+import SEO from "../utils/SEO";
 
 export default function StoreView() {
   const { slug } = useParams();
@@ -104,6 +105,11 @@ export default function StoreView() {
 
   return (
     <div className={`min-h-screen ${activeTheme.bg} ${activeTheme.text} ${activeTheme.font}`}>
+      <SEO
+        title={store.name}
+        description={store.description || `Shop at ${store.name} for the best local products and services.`}
+        ogType="website"
+      />
       {/* Navigation */}
       <nav className={`sticky top-0 z-50 px-4 py-4 sm:px-8 ${activeTheme.nav}`}>
         <div className="mx-auto flex max-w-7xl items-center justify-between">

@@ -2,6 +2,7 @@ import { ArrowLeft, ArrowRight, BadgeCheck, HelpCircle, KeyRound, LifeBuoy, Mail
 import { Link } from "react-router-dom";
 import BrandLogo from "../components/BrandLogo";
 import { LOGIN_ROUTE } from "../routes";
+import SEO from "../utils/SEO";
 
 export default function ResetPasswordPage() {
   const handleSubmit = (event) => {
@@ -9,7 +10,9 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <main className="min-h-[100dvh] bg-[#f4f6f8] text-[#2e333b]">
+    <>
+      <SEO title="Reset Password" description="Securely reset your ShopGenie account password and regain access to your shop." />
+      <main className="min-h-[100dvh] bg-[#f4f6f8] text-[#2e333b]">
       <section className="flex min-h-[100dvh] w-full flex-col">
         <div className="flex flex-1 items-center justify-center px-4 py-8 sm:px-8 lg:px-12">
           <div className="grid w-full max-w-[1100px] overflow-hidden rounded-sm bg-white shadow-[0_30px_80px_rgba(148,163,184,0.16)] lg:grid-cols-[1.04fr_1fr]">
@@ -137,5 +140,6 @@ export default function ResetPasswordPage() {
         </footer>
       </section>
     </main>
+    </>
   );
 }

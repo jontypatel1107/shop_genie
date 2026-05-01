@@ -3,6 +3,7 @@ import { ArrowRight, MessageCircleMore, Store } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { CATEGORY_ROUTE, LOGIN_ROUTE, VERIFY_ACCOUNT_ROUTE } from "../routes";
+import SEO from "../utils/SEO";
 
 export default function CreateAccountPage() {
   const navigate = useNavigate();
@@ -41,7 +42,9 @@ export default function CreateAccountPage() {
   };
 
   return (
-    <main className="min-h-[100dvh] bg-[#f5f6f8] text-slate-900">
+    <>
+      <SEO title="Create Account" description="Sign up for ShopGenie and start building your online shop in minutes. Free 14-day trial." />
+      <main className="min-h-[100dvh] bg-[#f5f6f8] text-slate-900">
       <section className="relative flex min-h-[100dvh] w-full items-center justify-center px-5 py-5 sm:px-8 sm:py-6 lg:px-12">
         <div className="grid w-full max-w-[1320px] gap-6 lg:grid-cols-[1fr_0.95fr] lg:items-center lg:gap-12 xl:min-h-[100dvh] xl:py-6">
           <div className="max-w-[38rem]">
@@ -228,5 +231,6 @@ export default function CreateAccountPage() {
         </button>
       </section>
     </main>
+    </>
   );
 }

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { CREATE_ACCOUNT_ROUTE, LOGIN_ROUTE } from "../routes";
+import SEO from "../utils/SEO";
 
 const metrics = [
   { value: "3m", label: "Setup time" },
@@ -23,7 +24,12 @@ export default function LandingPage() {
   };
 
   return (
-    <main className="min-h-[100dvh] bg-[#161616] text-slate-900">
+    <>
+      <SEO
+        title="No-Code Website Builder for Local Shops"
+        description="Launch your online shop in minutes with ShopGenie. No coding required. Build beautiful websites for your local business today."
+      />
+      <main className="min-h-[100dvh] bg-[#161616] text-slate-900">
       <section className="grid min-h-[100dvh] bg-[#f6f4ee] lg:grid-cols-[0.98fr_1fr]">
         <div className="flex flex-col justify-between overflow-hidden px-5 py-6 sm:px-10 sm:py-8 lg:overflow-visible lg:px-14 lg:py-8">
           <div>
@@ -144,5 +150,6 @@ export default function LandingPage() {
         </div>
       </section>
     </main>
+    </>
   );
 }

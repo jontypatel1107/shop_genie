@@ -5,6 +5,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import BrandLogo from "../components/BrandLogo";
 import { useAuth } from "../context/AuthContext";
 import { CREATE_ACCOUNT_ROUTE, DASHBOARD_ROUTE, RESET_PASSWORD_ROUTE, VERIFY_ACCOUNT_ROUTE } from "../routes";
+import SEO from "../utils/SEO";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -132,7 +133,9 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-[100dvh] bg-[#f4f6f8] text-[#2e333b]">
+    <>
+      <SEO title="Login" description="Access your ShopGenie dashboard to manage your online shop." />
+      <main className="min-h-[100dvh] bg-[#f4f6f8] text-[#2e333b]">
       <section className="relative flex min-h-[100dvh] w-full items-center justify-center px-4 py-5 sm:px-8 lg:px-12">
         <div className="w-full max-w-[430px] overflow-hidden rounded-xl bg-[#e3e7ec] shadow-[0_24px_70px_rgba(30,41,59,0.12)]">
           <div className="flex flex-col items-center px-5 pb-8 pt-12 text-center sm:px-8">
@@ -277,5 +280,6 @@ export default function LoginPage() {
         </button>
       </section>
     </main>
+    </>
   );
 }
