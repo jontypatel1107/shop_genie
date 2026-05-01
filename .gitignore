@@ -2,4 +2,9 @@ node_modules
 dist
 .vite
 .env
-.env.example
+backend/uploads/
+*.log
+.DS_Store
+.idea/
+.vscode/
+*.local
