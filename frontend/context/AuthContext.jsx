@@ -6,6 +6,14 @@ const AuthContext = createContext(null);
 // or we can use the absolute path if configured.
 const API_BASE = "/api";
 
+const parseJSON = async (res) => {
+  const contentType = res.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    throw new Error("Cannot connect to server. Make sure:\n1. Backend is running (cd backend && npm run dev)\n2. Frontend is running via Vite (cd frontend && npm run dev)\n3. You are accessing the app at http://localhost:5173");
+  }
+  return res.json();
+};
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -16,7 +24,7 @@ export function AuthProvider({ children }) {
         credentials: "include",
       });
       if (res.ok) {
-        const data = await res.json();
+        const data = await parseJSON(res);
         setUser(data.data.user);
       } else {
         setUser(null);
@@ -39,7 +47,7 @@ export function AuthProvider({ children }) {
       credentials: "include",
       body: JSON.stringify({ identifier, password }),
     });
-    const data = await res.json();
+    const data = await parseJSON(res);
     if (!res.ok) throw new Error(data.message || "Login failed");
     setUser(data.data.user);
     return data;
@@ -52,7 +60,7 @@ export function AuthProvider({ children }) {
       credentials: "include",
       body: JSON.stringify(userData),
     });
-    const data = await res.json();
+    const data = await parseJSON(res);
     if (!res.ok) throw new Error(data.message || "Registration failed");
     return data;
   };
@@ -64,7 +72,7 @@ export function AuthProvider({ children }) {
       credentials: "include",
       body: JSON.stringify({ code }),
     });
-    const data = await res.json();
+    const data = await parseJSON(res);
     if (!res.ok) throw new Error(data.message || "Verification failed");
     setUser(data.data.user);
     return data;

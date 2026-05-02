@@ -36,7 +36,9 @@ export default function LoginPage() {
             isAccessToken: true 
           }),
         });
-        const data = await res.json();
+        const data = res.headers.get("content-type")?.includes("application/json")
+          ? await res.json()
+          : { message: "Server error. Ensure backend is running." };
         if (res.ok) {
           updateUser(data.data.user);
           navigate(DASHBOARD_ROUTE);
@@ -75,7 +77,9 @@ export default function LoginPage() {
         }),
       });
       
-      const data = await res.json();
+      const data = res.headers.get("content-type")?.includes("application/json")
+        ? await res.json()
+        : { message: "Server error. Ensure backend is running." };
       if (res.ok) {
         updateUser(data.data.user);
         navigate(DASHBOARD_ROUTE);
