@@ -30,6 +30,7 @@ export default function LoginPage() {
         const res = await fetch("/api/auth/google", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ 
             token: tokenResponse.access_token,
             isAccessToken: true 
@@ -66,6 +67,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/apple", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ 
           appleUserId: mockAppleUserId,
           email: null,
